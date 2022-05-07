@@ -1,5 +1,5 @@
 import { App, Modal, Plugin, PluginSettingTab, Setting, normalizePath } from 'obsidian';
-import * as pako from 'pako';
+// import * as pako from 'pako';
 
 // import string from 'inline:./dist/test.js';
 
@@ -21,39 +21,45 @@ export default class MyPlugin extends Plugin {
 
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		// this.addSettingTab(new SampleSettingTab(this.app, this));
 
 
 
 		// console.log(string);
 
-		// const path = normalizePath(app.vault.configDir + "/plugins/obsidian-tikzjax/tikzjax/tex.wasm.gz");
-		// console.log(path);
-		// const result = await this.loadDecompress(path);
 
 
 		this.registerMarkdownCodeBlockProcessor("tikz", (source, el, ctx) => {
 
 			const script = el.createEl("script");
-			script.setText(source);
+			let lines = source.split("\n");
+
+
+			// Trim whitespace that is inserted when pasting in code
+			// Otherwise the TikZJax complains
+			lines = lines.map(function (line: string) {
+				return line.trim();
+			})
+
+
+			// Remove empty lines
+			lines = lines.filter(function (line: string) {
+				return line;
+			})
+
+
+			script.setText(lines.join("\n"));
+
 			script.setAttribute("data-show-console", "true");
 			script.setAttribute("type", "text/tikz");
-			// script.setAttribute("type", "text/javascript");
-
 		});
 
 
-		const s = document.createElement("script");
-		s.type = "text/javascript";
-		s.src = "https://raw.githubusercontent.com/artisticat1/obsidian-tikzjax/main/dist/tikzjax.js";
-		s.id = "tikzjax";
-		document.body.appendChild(s);
-
+		this.loadTikZJax();
 	}
 
 	onunload() {
-		const s = document.getElementById("tikzjax");
-		s.remove();
+		this.unloadTikZJax();
 	}
 
 	async loadSettings() {
@@ -65,16 +71,31 @@ export default class MyPlugin extends Plugin {
 	}
 
 
-	async loadDecompress(path: string) {
-		const adapter = this.app.vault.adapter;
-		const arrayBuffer = await adapter.readBinary(path);
+	// async loadDecompress(path: string) {
+	// 	const adapter = this.app.vault.adapter;
+	// 	const arrayBuffer = await adapter.readBinary(path);
 
-		var uint8View = new Uint8Array(arrayBuffer);
+	// 	var uint8View = new Uint8Array(arrayBuffer);
 
-		const result = pako.inflate(uint8View);
-		console.log(result);
+	// 	const result = pako.inflate(uint8View);
+	// 	console.log(result);
 
-		return result;
+	// 	return result;
+	// }
+
+	loadTikZJax() {
+		const s = document.createElement("script");
+
+		s.id = "tikzjax";
+		s.type = "text/javascript";
+		s.src = "https://cdn.jsdelivr.net/gh/artisticat1/obsidian-tikzjax@master/dist/tikzjax.js";
+
+		document.body.appendChild(s);
+	}
+
+	unloadTikZJax() {
+		const s = document.getElementById("tikzjax");
+		s.remove();
 	}
 }
 
