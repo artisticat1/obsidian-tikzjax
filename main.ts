@@ -36,7 +36,7 @@ export default class MyPlugin extends Plugin {
 
 
 			// Trim whitespace that is inserted when pasting in code
-			// Otherwise the TikZJax complains
+			// Otherwise TikZJax complains
 			lines = lines.map(function (line: string) {
 				return line.trim();
 			})
@@ -99,21 +99,6 @@ export default class MyPlugin extends Plugin {
 	}
 }
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
-
-	onOpen() {
-		const {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
-	}
-}
 
 class SampleSettingTab extends PluginSettingTab {
 	plugin: MyPlugin;
