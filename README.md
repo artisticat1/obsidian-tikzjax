@@ -73,8 +73,9 @@ to[R=$R_2$, i>_=$i_2$]
 
 
 ## Known issues
+- "\text" is an undefined control sequence. Fix: https://tex.stackexchange.com/questions/41035/what-is-causing-undefined-control-sequence
 - tikz-cd -- in some diagrams, some nodes fail to render. Fix: remove svg tags inserted by html machine
-- circuitikz -- some diagrams fail to render
+- circuitikz -- some diagrams fail to render. Pgfkeys does not know the keys '/tikz/inline not', '/tikz/component text', etc. [Maybe we need to use a newer version of circuitikz?](https://tex.stackexchange.com/questions/510268/trouble-with-pfgkeys-and-circuitikz-with-dipchips) Check the current version with https://tex.stackexchange.com/questions/584600/latex-circuitikz-i-do-not-know-the-key-tikz-tr-circle
 - pgfplots -- 3D surface plots don't fully render when there are too many points. For now, reduce the number of samples
 
 
