@@ -5,23 +5,23 @@ import { App, Modal, Plugin, PluginSettingTab, Setting, normalizePath } from 'ob
 
 // Remember to rename these classes and interfaces!
 
-interface MyPluginSettings {
+interface TikzjaxPluginSettings {
 	mySetting: string;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
+const DEFAULT_SETTINGS: TikzjaxPluginSettings = {
 	mySetting: 'default'
 }
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class TikzjaxPlugin extends Plugin {
+	settings: TikzjaxPluginSettings;
 
 	async onload() {
 		await this.loadSettings();
 
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
-		// this.addSettingTab(new SampleSettingTab(this.app, this));
+		// this.addSettingTab(new TikzjaxSettingTab(this.app, this));
 
 
 
@@ -100,10 +100,10 @@ export default class MyPlugin extends Plugin {
 }
 
 
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+class TikzjaxSettingTab extends PluginSettingTab {
+	plugin: TikzjaxPlugin;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: TikzjaxPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
