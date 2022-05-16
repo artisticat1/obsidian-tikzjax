@@ -105,8 +105,9 @@ export default class TikzjaxPlugin extends Plugin {
 
 		// Replace the color "black" with currentColor (the current text color)
 		// so that diagram axes, etc are visible in dark mode
+		// And replace "white" with the background color
 
-		svg.innerHTML = svg.innerHTML.replaceAll(`"#000"`, `"currentColor"`).replaceAll(`"black"`, `"currentColor"`);
+		svg.innerHTML = svg.innerHTML.replaceAll(`"#000"`, `"currentColor"`).replaceAll(`"black"`, `"currentColor"`).replaceAll(`"#fff"`, `"var(--background-primary)"`).replaceAll(`"white"`, `"var(--background-primary)"`);
 
 	}
 }
