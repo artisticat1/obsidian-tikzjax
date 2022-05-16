@@ -3,14 +3,13 @@ import { App, Modal, Plugin, PluginSettingTab, Setting, normalizePath } from 'ob
 
 // import string from 'inline:./dist/test.js';
 
-// Remember to rename these classes and interfaces!
 
 interface TikzjaxPluginSettings {
-	mySetting: string;
+	invertColorsInDarkMode: boolean;
 }
 
 const DEFAULT_SETTINGS: TikzjaxPluginSettings = {
-	mySetting: 'default'
+	invertColorsInDarkMode: true
 }
 
 export default class TikzjaxPlugin extends Plugin {
@@ -19,10 +18,7 @@ export default class TikzjaxPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		// this.addSettingTab(new TikzjaxSettingTab(this.app, this));
-
+		this.addSettingTab(new TikzjaxSettingTab(this.app, this));
 
 
 		// console.log(string);
@@ -85,17 +81,33 @@ export default class TikzjaxPlugin extends Plugin {
 
 	loadTikZJax() {
 		const s = document.createElement("script");
-
 		s.id = "tikzjax";
 		s.type = "text/javascript";
 		s.src = "https://cdn.jsdelivr.net/gh/artisticat1/obsidian-tikzjax@master/dist/tikzjax.js";
-
 		document.body.appendChild(s);
+
+
+		document.addEventListener('tikzjax-load-finished', this.colorSVGinDarkMode);
 	}
 
 	unloadTikZJax() {
 		const s = document.getElementById("tikzjax");
 		s.remove();
+
+		document.removeEventListener("tikzjax-load-finished", this.colorSVGinDarkMode);
+	}
+
+
+	colorSVGinDarkMode = (e: Event) => {
+		if (!this.settings.invertColorsInDarkMode) return;
+
+		const svg = e.target as HTMLElement;
+
+		// Replace the color "black" with currentColor (the current text color)
+		// so that diagram axes, etc are visible in dark mode
+
+		svg.innerHTML = svg.innerHTML.replaceAll(`"#000"`, `"currentColor"`).replaceAll(`"black"`, `"currentColor"`);
+
 	}
 }
 
@@ -113,17 +125,18 @@ class TikzjaxSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', {text: 'Settings for my awesome plugin.'});
+		containerEl.createEl('h4', {text: 'TikZJax settings'});
 
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+			.setName('Invert dark colors in dark mode')
+			.setDesc('Invert dark colors in diagrams (e.g. axes, arrows) when in dark mode, so that they are visible.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.invertColorsInDarkMode)
 				.onChange(async (value) => {
-					console.log('Secret: ' + value);
-					this.plugin.settings.mySetting = value;
+					this.plugin.settings.invertColorsInDarkMode = value;
+
+					// TODO: Refresh currently open views
+
 					await this.plugin.saveSettings();
 				}));
 	}
