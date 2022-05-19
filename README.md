@@ -79,6 +79,12 @@ to[R=$R_2$, i>_=$i_2$]
 - pgfplots -- 3D surface plots don't fully render when there are too many points. For now, reduce the number of samples
 
 
+## Notes
+- The plugin requires an internet connection on first use in order to download the TikZJax files. After this, they should be cached and the plugin will work offline.
+	- However, the cache is set to clear after 1 week. This means the plugin needs to redownload the TikZJax files, which requires an internet connection.
+	- I'm working on bundling the files with the plugin to resolve these issues.
+
+
 ## Acknowledgements
 This plugin would not be possible without [TikZJax](https://github.com/kisonecat/tikzjax) by [@kisonecat](https://github.com/kisonecat)! In particular, it uses
 [@drgrice1's fork](https://github.com/drgrice1/tikzjax/tree/ww-modifications) that adds some additional features.
