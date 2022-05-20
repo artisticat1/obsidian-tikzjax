@@ -9,6 +9,12 @@ Currently has these packages available in \usepackage{}:
 - circuitikz
 
 
+## Installation
+You can currently install the plugin via BRAT.
+
+Alternatively, you can manually install it by copying the `main.js`, `manifest.json`, and `styles.css` files into a folder `.obsidian/plugins/obsidian-tikzjax`.
+
+
 ## Usage
 ````
 ```tikz
