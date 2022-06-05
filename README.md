@@ -5,6 +5,7 @@ Currently has these packages available in \usepackage{}:
 - array
 - pgfplots
 - tikz-3dplot
+- chemfig
 - tikz-cd
 - circuitikz
 
