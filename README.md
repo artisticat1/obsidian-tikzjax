@@ -2,14 +2,14 @@
 A plugin for Obsidian that lets you render LaTeX and TikZ diagrams in your notes. WIP!
 
 Currently has these packages available in \usepackage{}:
-- array
-- pgfplots
-- tikz-3dplot
 - chemfig
 - tikz-cd
 - circuitikz
+- array
 - amsmath
   - amstext
+- pgfplots
+- tikz-3dplot
 
 
 ## Installation
@@ -19,7 +19,9 @@ Alternatively, you can manually install it by copying the `main.js`, `manifest.j
 
 
 ## Usage
-````
+### Input:
+
+````latex
 ```tikz
 \begin{document}
   \begin{tikzpicture}[domain=0:4]
@@ -35,7 +37,7 @@ Alternatively, you can manually install it by copying the `main.js`, `manifest.j
 ````
 
 
-````
+````latex
 ```tikz
 \usepackage{circuitikz}
 \begin{document}
@@ -55,7 +57,7 @@ to[R=$R_2$, i>_=$i_2$]
 ````
 
 
-````
+````latex
 ```tikz
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.16}
@@ -81,8 +83,92 @@ to[R=$R_2$, i>_=$i_2$]
 ![screenshot](./screenshot.png)
 
 
+
+### Input:
+
+````latex
+```tikz
+\usepackage{tikz-cd}
+
+\begin{document}
+\begin{tikzcd}
+
+    T
+    \arrow[drr, bend left, "x"]
+    \arrow[ddr, bend right, "y"]
+    \arrow[dr, dotted, "{(x,y)}" description] & & \\
+    K & X \times_Z Y \arrow[r, "p"] \arrow[d, "q"]
+    & X \arrow[d, "f"] \\
+    & Y \arrow[r, "g"]
+    & Z
+
+\end{tikzcd}
+
+\quad \quad
+
+\begin{tikzcd}[row sep=2.5em]
+
+A' \arrow[rr,"f'"] \arrow[dr,swap,"a"] \arrow[dd,swap,"g'"] &&
+  B' \arrow[dd,swap,"h'" near start] \arrow[dr,"b"] \\
+& A \arrow[rr,crossing over,"f" near start] &&
+  B \arrow[dd,"h"] \\
+C' \arrow[rr,"k'" near end] \arrow[dr,swap,"c"] && D' \arrow[dr,swap,"d"] \\
+& C \arrow[rr,"k"] \arrow[uu,<-,crossing over,"g" near end]&& D
+
+\end{tikzcd}
+
+\end{document}
+```
+````
+
+
+````latex
+```tikz
+\usepackage{chemfig}
+\begin{document}
+
+\chemfig{[:-90]HN(-[::-45](-[::-45]R)=[::+45]O)>[::+45]*4(-(=O)-N*5(-(<:(=[::-60]O)-[::+60]OH)-(<[::+0])(<:[::-108])-S>)--)}
+
+\end{document}
+```
+````
+
+
+````latex
+```tikz
+\usepackage{chemfig}
+\begin{document}
+
+\definesubmol\fragment1{
+
+    (-[:#1,0.85,,,draw=none]
+    -[::126]-[::-54](=_#(2pt,2pt)[::180])
+    -[::-70](-[::-56.2,1.07]=^#(2pt,2pt)[::180,1.07])
+    -[::110,0.6](-[::-148,0.60](=^[::180,0.35])-[::-18,1.1])
+    -[::50,1.1](-[::18,0.60]=_[::180,0.35])
+    -[::50,0.6]
+    -[::110])
+    }
+
+\chemfig{
+!\fragment{18}
+!\fragment{90}
+!\fragment{162}
+!\fragment{234}
+!\fragment{306}
+}
+
+\end{document}
+```
+````
+
+
+### Output:
+![screenshot](./screenshot2.png)
+
+
+
 ## Known issues
-- tikz-cd -- in some diagrams, some nodes fail to render. Fix: remove svg tags inserted by html machine
 - circuitikz -- some diagrams fail to render. Pgfkeys does not know the keys '/tikz/inline not', '/tikz/component text', etc. [Maybe we need to use a newer version of circuitikz?](https://tex.stackexchange.com/questions/510268/trouble-with-pfgkeys-and-circuitikz-with-dipchips) Check the current version with https://tex.stackexchange.com/questions/584600/latex-circuitikz-i-do-not-know-the-key-tikz-tr-circle
 - pgfplots -- 3D surface plots don't fully render when there are too many points. For now, reduce the number of samples
 
