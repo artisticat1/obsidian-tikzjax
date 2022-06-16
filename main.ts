@@ -26,25 +26,9 @@ export default class TikzjaxPlugin extends Plugin {
 
 
 		this.registerMarkdownCodeBlockProcessor("tikz", (source, el, ctx) => {
-
 			const script = el.createEl("script");
-			let lines = source.split("\n");
 
-
-			// Trim whitespace that is inserted when pasting in code
-			// Otherwise TikZJax complains
-			lines = lines.map(function (line: string) {
-				return line.trim();
-			})
-
-
-			// Remove empty lines
-			lines = lines.filter(function (line: string) {
-				return line;
-			})
-
-
-			script.setText(lines.join("\n"));
+			script.setText(this.tidyTikzSource(source));
 
 			script.setAttribute("data-show-console", "true");
 			script.setAttribute("type", "text/tikz");
@@ -109,6 +93,25 @@ export default class TikzjaxPlugin extends Plugin {
 		// @ts-ignore
 		window.CodeMirror.modeInfo = window.CodeMirror.modeInfo.filter(el => el.name != "Tikz");
 		this.refreshOpenMarkdownViews();
+	}
+
+	tidyTikzSource(tikzSource: string) {
+
+		// Remove non-breaking space characters, otherwise we get errors
+		const remove = "&nbsp;";
+		tikzSource = tikzSource.replaceAll(remove, "");
+
+
+		let lines = tikzSource.split("\n");
+
+		// Trim whitespace that is inserted when pasting in code, otherwise TikZJax complains
+		lines = lines.map(line => line.trim());
+
+		// Remove empty lines
+		lines = lines.filter(line => line);
+
+
+		return lines.join("\n");
 	}
 
 
