@@ -1,7 +1,7 @@
 import { App, Modal, Plugin, PluginSettingTab, Setting, normalizePath } from 'obsidian';
-// import * as pako from 'pako';
 
-// import string from 'inline:./dist/test.js';
+// @ts-ignore
+import tikzjaxJs from 'inline:./tikzjax.js';
 
 
 interface TikzjaxPluginSettings {
@@ -19,10 +19,6 @@ export default class TikzjaxPlugin extends Plugin {
 		await this.loadSettings();
 
 		this.addSettingTab(new TikzjaxSettingTab(this.app, this));
-
-
-		// console.log(string);
-
 
 
 		this.registerMarkdownCodeBlockProcessor("tikz", (source, el, ctx) => {
@@ -52,24 +48,11 @@ export default class TikzjaxPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-
-	// async loadDecompress(path: string) {
-	// 	const adapter = this.app.vault.adapter;
-	// 	const arrayBuffer = await adapter.readBinary(path);
-
-	// 	var uint8View = new Uint8Array(arrayBuffer);
-
-	// 	const result = pako.inflate(uint8View);
-	// 	console.log(result);
-
-	// 	return result;
-	// }
-
 	loadTikZJax() {
 		const s = document.createElement("script");
 		s.id = "tikzjax";
 		s.type = "text/javascript";
-		s.src = "https://cdn.jsdelivr.net/gh/artisticat1/obsidian-tikzjax@master/dist/tikzjax.js";
+		s.innerText = tikzjaxJs;
 		document.body.appendChild(s);
 
 
