@@ -52,10 +52,12 @@ export default class TikzjaxPlugin extends Plugin {
 
 
 		this.loadTikZJax();
+		this.addSyntaxHighlighting();
 	}
 
 	onunload() {
 		this.unloadTikZJax();
+		this.removeSyntaxHighlighting();
 	}
 
 	async loadSettings() {
@@ -97,6 +99,18 @@ export default class TikzjaxPlugin extends Plugin {
 		document.removeEventListener("tikzjax-load-finished", this.colorSVGinDarkMode);
 	}
 
+	addSyntaxHighlighting() {
+		// @ts-ignore
+		window.CodeMirror.modeInfo.push({name: "Tikz", mime: "text/x-latex", mode: "stex"});
+		this.refreshOpenMarkdownViews();
+	}
+
+	removeSyntaxHighlighting() {
+		// @ts-ignore
+		window.CodeMirror.modeInfo = window.CodeMirror.modeInfo.filter(el => el.name != "Tikz");
+		this.refreshOpenMarkdownViews();
+	}
+
 
 	colorSVGinDarkMode = (e: Event) => {
 		if (!this.settings.invertColorsInDarkMode) return;
@@ -109,6 +123,10 @@ export default class TikzjaxPlugin extends Plugin {
 
 		svg.innerHTML = svg.innerHTML.replaceAll(`"#000"`, `"currentColor"`).replaceAll(`"black"`, `"currentColor"`).replaceAll(`"#fff"`, `"var(--background-primary)"`).replaceAll(`"white"`, `"var(--background-primary)"`);
 
+	}
+
+	refreshOpenMarkdownViews() {
+		// To implement
 	}
 }
 
@@ -135,8 +153,7 @@ class TikzjaxSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.invertColorsInDarkMode)
 				.onChange(async (value) => {
 					this.plugin.settings.invertColorsInDarkMode = value;
-
-					// TODO: Refresh currently open views
+					this.plugin.refreshOpenMarkdownViews();
 
 					await this.plugin.saveSettings();
 				}));
