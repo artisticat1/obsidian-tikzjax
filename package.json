@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-tikzjax",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "Render LaTeX and TikZ diagrams in your notes",
 	"main": "main.js",
 	"scripts": {

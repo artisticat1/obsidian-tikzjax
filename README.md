@@ -5,10 +5,12 @@ Currently has these packages available in \usepackage{}:
 - chemfig
 - tikz-cd
 - circuitikz
+- pgfplots
 - array
 - amsmath
   - amstext
-- pgfplots
+- amsfonts
+- amssymb
 - tikz-3dplot
 
 
@@ -172,11 +174,6 @@ C' \arrow[rr,"k'" near end] \arrow[dr,swap,"c"] && D' \arrow[dr,swap,"d"] \\
 - circuitikz -- some diagrams fail to render. Pgfkeys does not know the keys '/tikz/inline not', '/tikz/component text', etc. [Maybe we need to use a newer version of circuitikz?](https://tex.stackexchange.com/questions/510268/trouble-with-pfgkeys-and-circuitikz-with-dipchips) Check the current version with https://tex.stackexchange.com/questions/584600/latex-circuitikz-i-do-not-know-the-key-tikz-tr-circle
 - pgfplots -- 3D surface plots don't fully render when there are too many points. For now, reduce the number of samples
 
-
-## Notes
-- The plugin requires an internet connection on first use in order to download the TikZJax files. After this, they should be cached and the plugin will work offline.
-	- However, the cache is set to clear after 1 week. This means the plugin needs to redownload the TikZJax files, which requires an internet connection.
-	- I'm working on bundling the files with the plugin to resolve these issues.
 
 
 ## Acknowledgements
