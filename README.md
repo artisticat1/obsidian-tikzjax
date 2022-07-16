@@ -1,4 +1,7 @@
+<img width=275 align="right" src="./imgs/screenshot.png">
+
 # Obsidian TikZJax
+
 A plugin for Obsidian that lets you render LaTeX and TikZ diagrams in your notes. WIP!
 
 Currently has these packages available in \usepackage{}:
@@ -21,7 +24,8 @@ Alternatively, you can manually install it by copying the `main.js`, `manifest.j
 
 
 ## Usage
-### Input:
+
+<img width=325 align="right" src="./imgs/img1.png">
 
 ````latex
 ```tikz
@@ -38,6 +42,7 @@ Alternatively, you can manually install it by copying the `main.js`, `manifest.j
 ```
 ````
 
+<img width=325 align="right" src="./imgs/img2.png">
 
 ````latex
 ```tikz
@@ -58,6 +63,7 @@ to[R=$R_2$, i>_=$i_2$]
 ```
 ````
 
+<img width=375 align="right" src="./imgs/img3.png">
 
 ````latex
 ```tikz
@@ -81,12 +87,7 @@ to[R=$R_2$, i>_=$i_2$]
 ```
 ````
 
-### Output:
-![screenshot](./screenshot.png)
-
-
-
-### Input:
+<img width=400 align="right" src="./imgs/img4.png">
 
 ````latex
 ```tikz
@@ -123,6 +124,7 @@ C' \arrow[rr,"k'" near end] \arrow[dr,swap,"c"] && D' \arrow[dr,swap,"d"] \\
 ```
 ````
 
+<img width=325 align="right" src="./imgs/img5.png">
 
 ````latex
 ```tikz
@@ -135,6 +137,7 @@ C' \arrow[rr,"k'" near end] \arrow[dr,swap,"c"] && D' \arrow[dr,swap,"d"] \\
 ```
 ````
 
+<img width=310 align="right" src="./imgs/img6.png">
 
 ````latex
 ```tikz
@@ -163,17 +166,6 @@ C' \arrow[rr,"k'" near end] \arrow[dr,swap,"c"] && D' \arrow[dr,swap,"d"] \\
 \end{document}
 ```
 ````
-
-
-### Output:
-![screenshot](./screenshot2.png)
-
-
-
-## Known issues
-- circuitikz -- some diagrams fail to render. Pgfkeys does not know the keys '/tikz/inline not', '/tikz/component text', etc. [Maybe we need to use a newer version of circuitikz?](https://tex.stackexchange.com/questions/510268/trouble-with-pfgkeys-and-circuitikz-with-dipchips) Check the current version with https://tex.stackexchange.com/questions/584600/latex-circuitikz-i-do-not-know-the-key-tikz-tr-circle
-- pgfplots -- 3D surface plots don't fully render when there are too many points. For now, reduce the number of samples
-
 
 
 ## Acknowledgements
