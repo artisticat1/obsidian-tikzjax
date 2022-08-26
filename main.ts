@@ -1,17 +1,9 @@
-import { App, Modal, Plugin, PluginSettingTab, Setting, Notice} from 'obsidian';
-import * as localForage from "localforage";
+import { Plugin } from 'obsidian';
+import { TikzjaxPluginSettings, DEFAULT_SETTINGS, TikzjaxSettingTab } from "./settings"
 
 // @ts-ignore
 import tikzjaxJs from 'inline:./tikzjax.js';
 
-
-interface TikzjaxPluginSettings {
-	invertColorsInDarkMode: boolean;
-}
-
-const DEFAULT_SETTINGS: TikzjaxPluginSettings = {
-	invertColorsInDarkMode: true
-}
 
 export default class TikzjaxPlugin extends Plugin {
 	settings: TikzjaxPluginSettings;
@@ -21,21 +13,9 @@ export default class TikzjaxPlugin extends Plugin {
 
 		this.addSettingTab(new TikzjaxSettingTab(this.app, this));
 
-
-		this.registerMarkdownCodeBlockProcessor("tikz", (source, el, ctx) => {
-			const script = el.createEl("script");
-
-			script.setText(this.tidyTikzSource(source));
-
-			script.setAttribute("data-show-console", "true");
-			script.setAttribute("type", "text/tikz");
-		});
-
-
 		this.loadTikZJax();
 		this.addSyntaxHighlighting();
-
-		localForage.config({ name: 'TikzJax', storeName: 'svgImages' });
+		this.registerTikzCodeBlock();
 	}
 
 	onunload() {
@@ -69,16 +49,27 @@ export default class TikzjaxPlugin extends Plugin {
 		document.removeEventListener("tikzjax-load-finished", this.colorSVGinDarkMode);
 	}
 
+
+	registerTikzCodeBlock() {
+		this.registerMarkdownCodeBlockProcessor("tikz", (source, el, ctx) => {
+			const script = el.createEl("script");
+
+			script.setText(this.tidyTikzSource(source));
+
+			script.setAttribute("data-show-console", "true");
+			script.setAttribute("type", "text/tikz");
+		});
+	}
+
+
 	addSyntaxHighlighting() {
 		// @ts-ignore
 		window.CodeMirror.modeInfo.push({name: "Tikz", mime: "text/x-latex", mode: "stex"});
-		this.refreshOpenMarkdownViews();
 	}
 
 	removeSyntaxHighlighting() {
 		// @ts-ignore
 		window.CodeMirror.modeInfo = window.CodeMirror.modeInfo.filter(el => el.name != "Tikz");
-		this.refreshOpenMarkdownViews();
 	}
 
 	tidyTikzSource(tikzSource: string) {
@@ -110,53 +101,9 @@ export default class TikzjaxPlugin extends Plugin {
 		// so that diagram axes, etc are visible in dark mode
 		// And replace "white" with the background color
 
-		svg.innerHTML = svg.innerHTML.replaceAll(`"#000"`, `"currentColor"`).replaceAll(`"black"`, `"currentColor"`).replaceAll(`"#fff"`, `"var(--background-primary)"`).replaceAll(`"white"`, `"var(--background-primary)"`);
+		svg.innerHTML = svg.innerHTML.replaceAll(/("#000"|"black")/g, `"currentColor"`)
+							.replaceAll(/("#fff"|"white")/g, `"var(--background-primary)"`);
 
-	}
-
-	refreshOpenMarkdownViews() {
-		// To implement
 	}
 }
 
-
-class TikzjaxSettingTab extends PluginSettingTab {
-	plugin: TikzjaxPlugin;
-
-	constructor(app: App, plugin: TikzjaxPlugin) {
-		super(app, plugin);
-		this.plugin = plugin;
-	}
-
-	display(): void {
-		const {containerEl} = this;
-
-		containerEl.empty();
-
-		containerEl.createEl('h4', {text: 'TikZJax settings'});
-
-		new Setting(containerEl)
-			.setName('Invert dark colors in dark mode')
-			.setDesc('Invert dark colors in diagrams (e.g. axes, arrows) when in dark mode, so that they are visible.')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.invertColorsInDarkMode)
-				.onChange(async (value) => {
-					this.plugin.settings.invertColorsInDarkMode = value;
-					this.plugin.refreshOpenMarkdownViews();
-
-					await this.plugin.saveSettings();
-				}));
-
-
-		new Setting(containerEl)
-			.setName('Clear cached SVGs')
-			.setDesc('SVGs rendered with TikZJax are stored in a database, so diagrams don\'t have to be re-rendered from scratch every time you open a page. Use this to clear the cache and force all diagrams to be re-rendered.')
-			.addButton(button => button
-				.setIcon("trash")
-				.setTooltip("Clear cached SVGs")
-				.onClick(async () => {
-					localForage.clear();
-					new Notice("TikZJax: Successfully cleared cached SVGs.", 3000);
-				}));
-	}
-}
