@@ -1,4 +1,5 @@
-import { App, Modal, Plugin, PluginSettingTab, Setting, normalizePath } from 'obsidian';
+import { App, Modal, Plugin, PluginSettingTab, Setting, Notice} from 'obsidian';
+import * as localForage from "localforage";
 
 // @ts-ignore
 import tikzjaxJs from 'inline:./tikzjax.js';
@@ -33,6 +34,8 @@ export default class TikzjaxPlugin extends Plugin {
 
 		this.loadTikZJax();
 		this.addSyntaxHighlighting();
+
+		localForage.config({ name: 'TikzJax', storeName: 'svgImages' });
 	}
 
 	onunload() {
@@ -142,6 +145,18 @@ class TikzjaxSettingTab extends PluginSettingTab {
 					this.plugin.refreshOpenMarkdownViews();
 
 					await this.plugin.saveSettings();
+				}));
+
+
+		new Setting(containerEl)
+			.setName('Clear cached SVGs')
+			.setDesc('SVGs rendered with TikZJax are stored in a database, so diagrams don\'t have to be re-rendered from scratch every time you open a page. Use this to clear the cache and force all diagrams to be re-rendered.')
+			.addButton(button => button
+				.setIcon("trash")
+				.setTooltip("Clear cached SVGs")
+				.onClick(async () => {
+					localForage.clear();
+					new Notice("TikZJax: Successfully cleared cached SVGs.", 3000);
 				}));
 	}
 }
