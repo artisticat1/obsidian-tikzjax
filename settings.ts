@@ -19,7 +19,14 @@ export class TikzjaxSettingTab extends PluginSettingTab {
 		super(app, plugin);
 		this.plugin = plugin;
 
-        localForage.config({ name: 'TikzJax', storeName: 'svgImages' });
+
+		// Configure localForage if it hasn't been configured by TikZJax already
+		// The try-catch block fixes the plugin failing to load on mobile
+		try {
+			localForage.config({ name: 'TikzJax', storeName: 'svgImages' });
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	display(): void {
@@ -47,8 +54,15 @@ export class TikzjaxSettingTab extends PluginSettingTab {
 				.setIcon("trash")
 				.setTooltip("Clear cached SVGs")
 				.onClick(async () => {
-					localForage.clear();
-					new Notice("TikZJax: Successfully cleared cached SVGs.", 3000);
+					localForage.clear((err) => {
+						if (err) {
+							console.log(err);
+							new Notice(err, 3000);
+						}
+						else {
+							new Notice("TikZJax: Successfully cleared cached SVGs.", 3000);
+						}
+					});
 				}));
 	}
 }
