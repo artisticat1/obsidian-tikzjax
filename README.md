@@ -25,7 +25,7 @@ Alternatively, you can manually install it by copying the `main.js`, `manifest.j
 
 ## Usage
 
-<img width=325 align="right" src="./imgs/img1.png">
+<img width=300 align="right" src="./imgs/img1.png">
 
 ````latex
 ```tikz
