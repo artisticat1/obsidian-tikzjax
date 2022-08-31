@@ -1,4 +1,4 @@
-import { Plugin } from 'obsidian';
+import { Plugin, WorkspaceWindow } from 'obsidian';
 import { TikzjaxPluginSettings, DEFAULT_SETTINGS, TikzjaxSettingTab } from "./settings";
 import { optimize } from "./svgo.browser";
 
@@ -11,16 +11,22 @@ export default class TikzjaxPlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
-
 		this.addSettingTab(new TikzjaxSettingTab(this.app, this));
 
-		this.loadTikZJax();
+		// Support pop-out windows
+		this.loadTikZJaxAllWindows();
+		this.registerEvent(this.app.workspace.on("window-open", (win, window) => {
+			this.loadTikZJax(window.document);
+		}));
+
+
 		this.addSyntaxHighlighting();
+		
 		this.registerTikzCodeBlock();
 	}
 
 	onunload() {
-		this.unloadTikZJax();
+		this.unloadTikZJaxAllWindows();
 		this.removeSyntaxHighlighting();
 	}
 
@@ -32,22 +38,55 @@ export default class TikzjaxPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	loadTikZJax() {
+
+	loadTikZJax(doc: Document) {
 		const s = document.createElement("script");
 		s.id = "tikzjax";
 		s.type = "text/javascript";
 		s.innerText = tikzjaxJs;
-		document.body.appendChild(s);
+		doc.body.appendChild(s);
 
 
-		document.addEventListener('tikzjax-load-finished', this.postProcessSvg);
+		doc.addEventListener('tikzjax-load-finished', this.postProcessSvg);
 	}
 
-	unloadTikZJax() {
-		const s = document.getElementById("tikzjax");
+	unloadTikZJax(doc: Document) {
+		const s = doc.getElementById("tikzjax");
 		s.remove();
 
-		document.removeEventListener("tikzjax-load-finished", this.postProcessSvg);
+		doc.removeEventListener("tikzjax-load-finished", this.postProcessSvg);
+	}
+
+	loadTikZJaxAllWindows() {
+		for (const window of this.getAllWindows()) {
+			this.loadTikZJax(window.document);
+		}
+	}
+
+	unloadTikZJaxAllWindows() {
+		for (const window of this.getAllWindows()) {
+			this.unloadTikZJax(window.document);
+		}
+	}
+
+	getAllWindows() {
+		// Via https://discord.com/channels/686053708261228577/840286264964022302/991591350107635753
+
+		const windows = [];
+		
+		// push the main window's root split to the list
+		windows.push(this.app.workspace.rootSplit.win);
+		
+		// @ts-ignore floatingSplit is undocumented
+		const floatingSplit = this.app.workspace.floatingSplit;
+		floatingSplit.children.forEach((child: any) => {
+			// if this is a window, push it to the list 
+			if (child instanceof WorkspaceWindow) {
+				windows.push(child.win);
+			}
+		});
+
+		return windows;
 	}
 
 
