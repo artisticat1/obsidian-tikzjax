@@ -94,10 +94,10 @@ export default class TikzjaxPlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor("tikz", (source, el, ctx) => {
 			const script = el.createEl("script");
 
-			script.setText(this.tidyTikzSource(source));
-
-			script.setAttribute("data-show-console", "true");
 			script.setAttribute("type", "text/tikz");
+			script.setAttribute("data-show-console", "true");
+
+			script.setText(this.tidyTikzSource(source));
 		});
 	}
 
