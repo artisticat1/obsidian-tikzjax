@@ -14,10 +14,12 @@ export default class TikzjaxPlugin extends Plugin {
 		this.addSettingTab(new TikzjaxSettingTab(this.app, this));
 
 		// Support pop-out windows
-		this.loadTikZJaxAllWindows();
-		this.registerEvent(this.app.workspace.on("window-open", (win, window) => {
-			this.loadTikZJax(window.document);
-		}));
+		this.app.workspace.onLayoutReady(() => {
+			this.loadTikZJaxAllWindows();
+			this.registerEvent(this.app.workspace.on("window-open", (win, window) => {
+				this.loadTikZJax(window.document);
+			}));
+		});
 
 
 		this.addSyntaxHighlighting();
