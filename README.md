@@ -2,9 +2,9 @@
 
 # Obsidian TikZJax
 
-A plugin for Obsidian that lets you render LaTeX and TikZ diagrams in your notes. WIP!
+A plugin for Obsidian that lets you render LaTeX and TikZ diagrams in your notes.
 
-Currently has these packages available in \usepackage{}:
+Currently, the following packages are available in \usepackage{}:
 - chemfig
 - tikz-cd
 - circuitikz
@@ -16,15 +16,13 @@ Currently has these packages available in \usepackage{}:
 - amssymb
 - tikz-3dplot
 
-
-## Installation
-You can currently install the plugin via BRAT.
-
-Alternatively, you can manually install it by copying the `main.js`, `manifest.json`, and `styles.css` files into a folder `.obsidian/plugins/obsidian-tikzjax`.
-
-
 ## Usage
+The content inside `tikz` code blocks will be rendered by TikZJax.
 
+Remember to load any packages you need, and include `\begin{document}` and `\end{document}`. The standalone document class is used (`\documentclass{standalone}`).
+
+
+### Examples
 <img width=300 align="right" src="./imgs/img1.png">
 
 ````latex
