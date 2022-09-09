@@ -4,7 +4,9 @@
 
 A plugin for Obsidian that lets you render LaTeX and TikZ diagrams in your notes.
 
-Currently, the following packages are available in \usepackage{}:
+You can render graphs, figures, circuits, chemical diagrams, commutative diagrams, and more.
+
+The following packages are available in `\usepackage{}`:
 - chemfig
 - tikz-cd
 - circuitikz
@@ -17,9 +19,11 @@ Currently, the following packages are available in \usepackage{}:
 - tikz-3dplot
 
 ## Usage
-The content inside `tikz` code blocks will be rendered by TikZJax.
+Content inside of `tikz` code blocks will be rendered by TikZJax.
 
-Remember to load any packages you need, and include `\begin{document}` and `\end{document}`. The standalone document class is used (`\documentclass{standalone}`).
+- Remember to load any packages you need with `\usepackage{}`, and include `\begin{document}` and `\end{document}`.
+
+- The standalone document class is used (`\documentclass{standalone}`).
 
 
 ### Examples
