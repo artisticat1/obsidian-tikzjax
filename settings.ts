@@ -33,8 +33,6 @@ export class TikzjaxSettingTab extends PluginSettingTab {
 		const {containerEl} = this;
 		containerEl.empty();
 
-		containerEl.createEl('h4', {text: 'TikZJax settings'});
-
 		new Setting(containerEl)
 			.setName('Invert dark colors in dark mode')
 			.setDesc('Invert dark colors in diagrams (e.g. axes, arrows) when in dark mode, so that they are visible.')
