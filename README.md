@@ -205,7 +205,8 @@ file in some subfolder of your vault. For example,
     }
 }
 ````
-And then the settings can be imported using the macro `%:input path/to/settings`:
+And then the settings can be imported using the macro `%:input path/to/settings`
+(with no indent before `%`):
 <img width=300 align="right" src="./imgs/img7.png">
 ````latex
 ```tikz
