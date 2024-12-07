@@ -169,6 +169,61 @@ C' \arrow[rr,"k'" near end] \arrow[dr,swap,"c"] && D' \arrow[dr,swap,"d"] \\
 ```
 ````
 
+Common settings for multiple figures and multiple notes can be written in a separate
+file in some subfolder of your vault. For example,
+````latex
+%% config/tikzsettings.tex
+
+\usepackage{amsmath}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathmorphing}
+\usetikzlibrary{decorations.markings}
+\tikzset{
+    every picture/.style={scale=1.5, semithick, line cap=round},
+    fermion/.default=0.5,
+    fermion/.style={postaction={decorate, decoration={
+        markings,
+        mark=at position #1 with {\arrow{Stealth[angle=30:6pt,inset=1pt]}},
+        transform={xshift={3pt*cos(15)}}
+    }}},
+    photon/.default=6pt,
+    photon/.style={
+        decorate, decoration={
+            snake,
+            amplitude=0.25*#1,
+            segment length=#1
+        }
+    },
+    pics/momentum/.style n args={4}{
+        code={
+            \draw[solid, -{Stealth[angle=30:6pt,inset=1pt]}]
+                ({-0.3*cos(#1)-#2*sin(#1)}, {-0.3*sin(#1)+#2*cos(#1)}) --
+                ({0.3*cos(#1)-#2*sin(#1)}, {0.3*sin(#1)+#2*cos(#1)})
+                node[pos=0.5, #3]{#4};
+        }
+    }
+}
+````
+And then the settings can be imported using the macro `%:input path/to/settings`
+(with no indent before `%`):
+<img width=300 align="right" src="./imgs/img7.png">
+````latex
+```tikz
+%:input config/tikzsettings.tex
+\begin{document}
+\begin{tikzpicture}
+  \draw[fermion] (-1.7, 1) node[left]{$e^-$} -- (-0.7, 0);
+  \draw[fermion] (-0.7, 0) -- (-1.7, -1) node[left]{$e^+$};
+  \draw[photon=8.3pt] (-0.7, 0) -- (0.7, 0)
+    pic[pos=0.5]{momentum={0}{0.3}{above}{$q$}};
+  \draw[fermion] (1.7, -1) node[right]{$\mu^+$} -- (0.7, 0);
+  \draw[fermion] (0.7, 0) -- (1.7, 1) node[right]{$\mu^-$};
+\end{tikzpicture}
+\end{document}
+```
+````
+
 ## Contributing
 Contributions are welcome! For information on building Tikzjax, have a look at the [contributing guide](https://github.com/artisticat1/obsidian-tikzjax/issues/68), courtesy of [@thecodechemist99](https://github.com/thecodechemist99).
 

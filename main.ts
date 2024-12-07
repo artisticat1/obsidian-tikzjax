@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceWindow } from 'obsidian';
+import { Plugin, TFile, WorkspaceWindow } from 'obsidian';
 import { TikzjaxPluginSettings, DEFAULT_SETTINGS, TikzjaxSettingTab } from "./settings";
 import { optimize } from "./svgo.browser";
 
@@ -93,13 +93,17 @@ export default class TikzjaxPlugin extends Plugin {
 
 
 	registerTikzCodeBlock() {
-		this.registerMarkdownCodeBlockProcessor("tikz", (source, el, ctx) => {
+		this.registerMarkdownCodeBlockProcessor("tikz", async (source, el, ctx) => {
+			// The embedding should precede the creation of the script element,
+			// otherwise the MutationObserver of tikzjax.js may not notice the change of the element.
+			// And I don’t know why. -- Zhewen Mo
+			let sourceComplete = await this.embedTexInput(source);
+
 			const script = el.createEl("script");
 
 			script.setAttribute("type", "text/tikz");
 			script.setAttribute("data-show-console", "true");
-
-			script.setText(this.tidyTikzSource(source));
+			script.setText(this.tidyTikzSource(sourceComplete));
 		});
 	}
 
@@ -112,6 +116,26 @@ export default class TikzjaxPlugin extends Plugin {
 	removeSyntaxHighlighting() {
 		// @ts-ignore
 		window.CodeMirror.modeInfo = window.CodeMirror.modeInfo.filter(el => el.name != "Tikz");
+	}
+
+	// Inspired by Chris Morgan's answer in https://stackoverflow.com/questions/33631041/javascript-async-await-in-replace
+	async replaceAsync(string: string, regexp: RegExp, replacer: (...args: any[]) => Promise<string>): Promise<string> {
+		const replacements = await Promise.all(
+			Array.from(string.matchAll(regexp),
+				match => replacer(...match)));
+		let i = 0;
+		return string.replace(regexp, () => replacements[i++]);
+	}
+
+	async embedTexInput(tikzSource: string): Promise<string> {
+		return this.replaceAsync(tikzSource, /^%:input\s+(.+)$/gm, async (_, path) => {
+			const file = this.app.vault.getAbstractFileByPath(path);
+			if (file instanceof TFile) {
+				return await this.app.vault.cachedRead(file);
+			} else {
+				return "";
+			}
+		});
 	}
 
 	tidyTikzSource(tikzSource: string) {
