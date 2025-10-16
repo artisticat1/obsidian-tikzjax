@@ -13,16 +13,16 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^16.11.6",
+		"@types/pako": "^1.0.3",
 		"@typescript-eslint/eslint-plugin": "^5.2.0",
 		"@typescript-eslint/parser": "^5.2.0",
 		"builtin-modules": "^3.2.0",
-		"esbuild": "0.13.12",
+		"esbuild": "^0.25.11",
+		"esbuild-plugin-inline-import": "^1.0.1",
+		"localforage": "^1.9.0",
 		"obsidian": "latest",
 		"pako": "^2.0.4",
-		"@types/pako": "^1.0.3",
 		"tslib": "2.3.1",
-		"typescript": "4.4.4",
-		"esbuild-plugin-inline-import": "^1.0.1",
-		"localforage": "^1.9.0"
+		"typescript": "4.4.4"
 	}
 }

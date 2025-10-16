@@ -42,7 +42,7 @@ export default class TikzjaxPlugin extends Plugin {
 
 
 	loadTikZJax(doc: Document) {
-		const s = document.createElement("script");
+		const s = doc.createElement("script");
 		s.id = "tikzjax";
 		s.type = "text/javascript";
 		s.innerText = tikzjaxJs;
@@ -100,6 +100,10 @@ export default class TikzjaxPlugin extends Plugin {
 			script.setAttribute("data-show-console", "true");
 
 			script.setText(this.tidyTikzSource(source));
+
+			if (!el.ownerDocument.getElementById("tikzjax")) {
+				this.loadTikZJax(el.ownerDocument);	
+			}
 		});
 	}
 
