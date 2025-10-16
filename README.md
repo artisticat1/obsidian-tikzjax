@@ -25,6 +25,45 @@ Content inside of `tikz` code blocks will be rendered by TikZJax.
 
 - The standalone document class is used (`\documentclass{standalone}`).
 
+### Preamble Support
+You can create a `tikz-preamble.tex` file to define common packages and commands that will be automatically included in all TikZ diagrams. The plugin searches for this file starting from your current note's directory and walking up the directory tree to the vault root, using the **first file found**.
+
+This allows you to:
+- **Simplify TikZ code blocks** by moving common setup to the preamble
+- **Organize by topic** using different preambles in different folders
+- **Inherit settings** from parent directories when no local preamble exists
+
+**Example `tikz-preamble.tex`:**
+```latex
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{circuitikz}
+\usetikzlibrary{arrows.meta, positioning}
+
+% Custom commands
+\newcommand{\myarrow}[1]{\draw[->] #1;}
+\pgfplotsset{compat=1.16}
+```
+
+With this preamble file, you can write simpler TikZ code blocks:
+````latex
+```tikz
+\begin{document}
+\begin{tikzpicture}
+  \myarrow{(0,0) -- (1,1)}
+\end{tikzpicture}
+\end{document}
+```
+````
+
+### Error Reporting
+When TikZ compilation fails, the plugin now displays detailed error messages directly below the code block. The error display intelligently filters LaTeX output to show only relevant information:
+
+- **Preamble errors** (before `\begin{document}`): Package conflicts, command redefinitions, etc.
+- **Document errors** (after `\begin{document}`): Syntax errors, missing brackets, undefined commands, etc.
+- **Smart filtering**: Automatically hides normal library loading messages and focuses on actual problems
+- **Inline display**: Errors appear directly in your note, making debugging much easier
+
 
 ### Examples
 <img width=300 align="right" src="./imgs/img1.png">
