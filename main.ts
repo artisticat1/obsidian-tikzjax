@@ -1,186 +1,230 @@
 import { Plugin, WorkspaceWindow } from 'obsidian';
-import { TikzjaxPluginSettings, DEFAULT_SETTINGS, TikzjaxSettingTab } from "./settings";
-import { optimize } from "./svgo.browser";
+import { TikzjaxPluginSettings, DEFAULT_SETTINGS, TikzjaxSettingTab } from './settings';
 
-// @ts-ignore
+// @ts-ignore - esbuild inline import plugin
 import tikzjaxJs from 'inline:./tikzjax.js';
 
+// Import transformer pipeline
+import {
+	SvgPipeline,
+	createPipeline,
+	createDarkModeTransformer,
+	createSvgoTransformer,
+} from './src/transformers';
 
+// Import utilities
+import { tidyTikzSource } from './src/utils';
+
+/**
+ * TikZJax Plugin for Obsidian
+ * 
+ * Renders LaTeX and TikZ diagrams in Obsidian notes using the TikZJax library.
+ */
 export default class TikzjaxPlugin extends Plugin {
-	settings: TikzjaxPluginSettings;
+	settings!: TikzjaxPluginSettings;
 
-	async onload() {
+	/** SVG processing pipeline with composable transformers */
+	private pipeline!: SvgPipeline;
+
+	/** Tracks elements currently being processed to prevent duplicates */
+	private processingQueue: Set<HTMLElement> = new Set();
+
+	async onload(): Promise<void> {
 		await this.loadSettings();
+		this.initializePipeline();
 		this.addSettingTab(new TikzjaxSettingTab(this.app, this));
 
 		// Support pop-out windows
 		this.app.workspace.onLayoutReady(() => {
 			this.loadTikZJaxAllWindows();
-			this.registerEvent(this.app.workspace.on("window-open", (win, window) => {
-				this.loadTikZJax(window.document);
-			}));
+			this.registerEvent(
+				this.app.workspace.on('window-open', (_win, window) => {
+					this.loadTikZJax(window.document);
+				})
+			);
 		});
 
-
 		this.addSyntaxHighlighting();
-		
 		this.registerTikzCodeBlock();
 	}
 
-	onunload() {
+	onunload(): void {
 		this.unloadTikZJaxAllWindows();
 		this.removeSyntaxHighlighting();
+		this.processingQueue.clear();
+		this.pipeline.clear();
 	}
 
-	async loadSettings() {
+	async loadSettings(): Promise<void> {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	}
 
-	async saveSettings() {
+	async saveSettings(): Promise<void> {
 		await this.saveData(this.settings);
+		// Update pipeline when settings change
+		this.updatePipelineSettings();
 	}
 
+	/**
+	 * Initialize the SVG processing pipeline with transformers
+	 */
+	private initializePipeline(): void {
+		this.pipeline = createPipeline({
+			debug: false,
+			continueOnError: true,
+		});
 
-	loadTikZJax(doc: Document) {
-		const s = document.createElement("script");
-		s.id = "tikzjax";
-		s.type = "text/javascript";
-		s.innerText = tikzjaxJs;
-		doc.body.appendChild(s);
+		// Add transformers in priority order
+		this.pipeline
+			.add(createDarkModeTransformer(this.settings.invertColorsInDarkMode))
+			.add(createSvgoTransformer(100)); // 100ms idle timeout
+	}
 
+	/**
+	 * Update pipeline transformer settings when user preferences change
+	 */
+	private updatePipelineSettings(): void {
+		this.pipeline.setEnabled('dark-mode-color', this.settings.invertColorsInDarkMode);
+	}
+
+	/**
+	 * Load TikZJax script into a document
+	 */
+	loadTikZJax(doc: Document): void {
+		// Check if already loaded
+		if (doc.getElementById('tikzjax')) {
+			return;
+		}
+
+		const script = doc.createElement('script');
+		script.id = 'tikzjax';
+		script.type = 'text/javascript';
+		script.textContent = tikzjaxJs;
+		doc.body.appendChild(script);
 
 		doc.addEventListener('tikzjax-load-finished', this.postProcessSvg);
 	}
 
-	unloadTikZJax(doc: Document) {
-		const s = doc.getElementById("tikzjax");
-		s.remove();
+	/**
+	 * Unload TikZJax from a document
+	 */
+	unloadTikZJax(doc: Document): void {
+		const script = doc.getElementById('tikzjax');
+		if (script) {
+			script.remove();
+		}
 
-		doc.removeEventListener("tikzjax-load-finished", this.postProcessSvg);
+		doc.removeEventListener('tikzjax-load-finished', this.postProcessSvg);
 	}
 
-	loadTikZJaxAllWindows() {
-		for (const window of this.getAllWindows()) {
-			this.loadTikZJax(window.document);
+	/**
+	 * Load TikZJax into all windows (main and pop-outs)
+	 */
+	loadTikZJaxAllWindows(): void {
+		for (const win of this.getAllWindows()) {
+			this.loadTikZJax(win.document);
 		}
 	}
 
-	unloadTikZJaxAllWindows() {
-		for (const window of this.getAllWindows()) {
-			this.unloadTikZJax(window.document);
+	/**
+	 * Unload TikZJax from all windows
+	 */
+	unloadTikZJaxAllWindows(): void {
+		for (const win of this.getAllWindows()) {
+			this.unloadTikZJax(win.document);
 		}
 	}
 
-	getAllWindows() {
-		// Via https://discord.com/channels/686053708261228577/840286264964022302/991591350107635753
+	/**
+	 * Get all open windows (main + floating)
+	 * @see https://discord.com/channels/686053708261228577/840286264964022302/991591350107635753
+	 */
+	getAllWindows(): Window[] {
+		const windows: Window[] = [];
 
-		const windows = [];
-		
-		// push the main window's root split to the list
+		// Main window
 		windows.push(this.app.workspace.rootSplit.win);
-		
-		// @ts-ignore floatingSplit is undocumented
+
+		// Floating windows (undocumented API)
+		// @ts-ignore - floatingSplit is undocumented
 		const floatingSplit = this.app.workspace.floatingSplit;
-		floatingSplit.children.forEach((child: any) => {
-			// if this is a window, push it to the list 
-			if (child instanceof WorkspaceWindow) {
-				windows.push(child.win);
-			}
-		});
+		if (floatingSplit?.children) {
+			floatingSplit.children.forEach((child: unknown) => {
+				if (child instanceof WorkspaceWindow) {
+					windows.push(child.win);
+				}
+			});
+		}
 
 		return windows;
 	}
 
-
-	registerTikzCodeBlock() {
-		this.registerMarkdownCodeBlockProcessor("tikz", (source, el, ctx) => {
-			const script = el.createEl("script");
-
-			script.setAttribute("type", "text/tikz");
-			script.setAttribute("data-show-console", "true");
-
-			script.setText(this.tidyTikzSource(source));
+	/**
+	 * Register the tikz code block processor
+	 */
+	registerTikzCodeBlock(): void {
+		this.registerMarkdownCodeBlockProcessor('tikz', (source, el) => {
+			const script = el.createEl('script');
+			script.setAttribute('type', 'text/tikz');
+			script.setAttribute('data-show-console', 'true');
+			script.setText(tidyTikzSource(source));
 		});
 	}
 
-
-	addSyntaxHighlighting() {
-		// @ts-ignore
-		window.CodeMirror.modeInfo.push({name: "Tikz", mime: "text/x-latex", mode: "stex"});
-	}
-
-	removeSyntaxHighlighting() {
-		// @ts-ignore
-		window.CodeMirror.modeInfo = window.CodeMirror.modeInfo.filter(el => el.name != "Tikz");
-	}
-
-	tidyTikzSource(tikzSource: string) {
-
-		// Remove non-breaking space characters, otherwise we get errors
-		const remove = "&nbsp;";
-		tikzSource = tikzSource.replaceAll(remove, "");
-
-
-		let lines = tikzSource.split("\n");
-
-		// Trim whitespace that is inserted when pasting in code, otherwise TikZJax complains
-		lines = lines.map(line => line.trim());
-
-		// Remove empty lines
-		lines = lines.filter(line => line);
-
-
-		return lines.join("\n");
-	}
-
-
-	colorSVGinDarkMode(svg: string) {
-		// Replace the color "black" with currentColor (the current text color)
-		// so that diagram axes, etc are visible in dark mode
-		// And replace "white" with the background color
-
-		svg = svg.replaceAll(/("#000"|"black")/g, `"currentColor"`)
-				.replaceAll(/("#fff"|"white")/g, `"var(--background-primary)"`);
-
-		return svg;
-	}
-
-
-	optimizeSVG(svg: string) {
-		// Optimize the SVG using SVGO
-		// Fixes misaligned text nodes on mobile
-
-		return optimize(svg, {plugins:
-			[
-				{
-					name: 'preset-default',
-					params: {
-						overrides: {
-							// Don't use the "cleanupIDs" plugin
-							// To avoid problems with duplicate IDs ("a", "b", ...)
-							// when inlining multiple svgs with IDs
-							cleanupIDs: false
-						}
-					}
-				}
-			]
-		// @ts-ignore
-		}).data;
-	}
-
-
-	postProcessSvg = (e: Event) => {
-
-		const svgEl = e.target as HTMLElement;
-		let svg = svgEl.outerHTML;
-
-		if (this.settings.invertColorsInDarkMode) {
-			svg = this.colorSVGinDarkMode(svg);
+	/**
+	 * Add TikZ syntax highlighting support to CodeMirror
+	 */
+	addSyntaxHighlighting(): void {
+		// @ts-ignore - CodeMirror global
+		if (window.CodeMirror?.modeInfo) {
+			// @ts-ignore
+			window.CodeMirror.modeInfo.push({
+				name: 'Tikz',
+				mime: 'text/x-latex',
+				mode: 'stex',
+			});
 		}
-
-		svg = this.optimizeSVG(svg);
-
-		svgEl.outerHTML = svg;
 	}
+
+	/**
+	 * Remove TikZ syntax highlighting from CodeMirror
+	 */
+	removeSyntaxHighlighting(): void {
+		// @ts-ignore - CodeMirror global
+		if (window.CodeMirror?.modeInfo) {
+			// @ts-ignore
+			window.CodeMirror.modeInfo = window.CodeMirror.modeInfo.filter(
+				(el: { name: string }) => el.name !== 'Tikz'
+			);
+		}
+	}
+
+	/**
+	 * Post-process rendered SVG through the transformer pipeline
+	 * Arrow function to preserve `this` context when used as event handler
+	 */
+	postProcessSvg = async (event: Event): Promise<void> => {
+		const svgEl = event.target as HTMLElement;
+
+		// Prevent duplicate processing
+		if (this.processingQueue.has(svgEl)) {
+			return;
+		}
+		this.processingQueue.add(svgEl);
+
+		try {
+			const originalSvg = svgEl.outerHTML;
+			const processedSvg = await this.pipeline.process(originalSvg, svgEl);
+
+			// Only update DOM if element is still attached and content changed
+			if (svgEl.parentElement && processedSvg !== originalSvg) {
+				svgEl.outerHTML = processedSvg;
+			}
+		} catch (error) {
+			console.error('TikZJax: SVG post-processing failed', error);
+		} finally {
+			this.processingQueue.delete(svgEl);
+		}
+	};
 }
 
