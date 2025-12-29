@@ -42,7 +42,7 @@ export function tidyTikzSource(source: string): string {
  * Alternative implementation using reduce for functional style
  * Kept for reference - benchmarks show similar performance
  */
-export function tidyTikzSourceFunctional(source: string): string {
+function tidyTikzSourceFunctional(source: string): string {
     return source
         .replace(NBSP_PATTERN, '')
         .split('\n')

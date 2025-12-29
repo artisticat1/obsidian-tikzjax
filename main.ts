@@ -21,10 +21,13 @@ import { tidyTikzSource } from './src/utils';
  * Renders LaTeX and TikZ diagrams in Obsidian notes using the TikZJax library.
  */
 export default class TikzjaxPlugin extends Plugin {
-	settings!: TikzjaxPluginSettings;
+	settings: TikzjaxPluginSettings = { ...DEFAULT_SETTINGS };
 
 	/** SVG processing pipeline with composable transformers */
-	private pipeline!: SvgPipeline;
+	private pipeline: SvgPipeline = createPipeline({
+		debug: false,
+		continueOnError: true,
+	});
 
 	/** Tracks elements currently being processed to prevent duplicates */
 	private processingQueue: Set<HTMLElement> = new Set();

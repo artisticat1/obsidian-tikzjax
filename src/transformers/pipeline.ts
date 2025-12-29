@@ -95,7 +95,8 @@ export class SvgPipeline {
             }
 
             try {
-                const result = await Promise.resolve(transformer.transform(ctx));
+                const maybePromise = transformer.transform(ctx);
+                const result = await Promise.resolve(maybePromise);
 
                 if (result.modified) {
                     ctx.svg = result.svg;
