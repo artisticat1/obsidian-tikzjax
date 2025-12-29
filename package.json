@@ -1,28 +1,34 @@
 {
 	"name": "obsidian-tikzjax",
-	"version": "0.5.2",
+	"version": "0.6.0",
 	"description": "Render LaTeX and TikZ diagrams in your notes",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"typecheck": "tsc --noEmit --skipLibCheck",
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
-	"keywords": [],
-	"author": "",
+	"keywords": [
+		"obsidian",
+		"tikz",
+		"latex",
+		"diagram"
+	],
+	"author": "artisticat",
 	"license": "MIT",
 	"devDependencies": {
-		"@types/node": "^16.11.6",
-		"@typescript-eslint/eslint-plugin": "^5.2.0",
-		"@typescript-eslint/parser": "^5.2.0",
-		"builtin-modules": "^3.2.0",
-		"esbuild": "0.13.12",
+		"@types/node": "^20.10.0",
+		"@typescript-eslint/eslint-plugin": "^6.13.0",
+		"@typescript-eslint/parser": "^6.13.0",
+		"builtin-modules": "^3.3.0",
+		"esbuild": "^0.19.8",
 		"obsidian": "latest",
-		"pako": "^2.0.4",
-		"@types/pako": "^1.0.3",
-		"tslib": "2.3.1",
-		"typescript": "4.4.4",
-		"esbuild-plugin-inline-import": "^1.0.1",
-		"localforage": "^1.9.0"
+		"pako": "^2.1.0",
+		"@types/pako": "^2.0.3",
+		"tslib": "^2.6.2",
+		"typescript": "^5.3.2",
+		"esbuild-plugin-inline-import": "^1.0.4",
+		"localforage": "^1.10.0"
 	}
 }
