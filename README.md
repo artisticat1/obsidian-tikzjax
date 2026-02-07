@@ -4,6 +4,14 @@
 
 A plugin for Obsidian that lets you render LaTeX and TikZ diagrams in your notes.
 
+## Patch Metadata
+- Author: Roberto Bissanti
+- Date: 7 febbraio 2026
+- Email: roberto.bissanti@gmail.com
+- GitHub username: robertobissanti
+- GitHub: https://github.com/robertobissanti
+- Patch scope: export/print/PDF fixes for TikZ SVG rendering and placement
+
 You can render graphs, figures, circuits, chemical diagrams, commutative diagrams, and more.
 
 The following packages are available in `\usepackage{}`:
@@ -175,3 +183,53 @@ Contributions are welcome! For information on building Tikzjax, have a look at t
 ## Acknowledgements
 This plugin would not be possible without [TikZJax](https://github.com/kisonecat/tikzjax) by [@kisonecat](https://github.com/kisonecat)! In particular, it uses
 [@drgrice1's fork](https://github.com/drgrice1/tikzjax/tree/ww-modifications) that adds some additional features.
+
+## Pandoc Integration (Obsidian Pandoc Plugin)
+This fork includes a ready-to-use integration layer for the Obsidian Pandoc Plugin:
+- https://github.com/OliverBalfour/obsidian-pandoc
+
+Integration files are in:
+- `obsidian-pandoc-integration/preamble.tex`
+- `obsidian-pandoc-integration/tikz.lua`
+
+### Recommended Obsidian Pandoc settings
+In **Extra Pandoc Arguments**, use one option per line (no trailing `\\`):
+
+```text
+--resource-path=<PATH_TO_YOUR_VAULT>
+--pdf-engine=xelatex
+--include-in-header=obsidian-pandoc-integration/preamble.tex
+--lua-filter=<PATH_TO_YOUR_VAULT>/.obsidian/plugins/<PLUGIN_ID>/obsidian-pandoc-integration/tikz.lua
+```
+
+Replace placeholders:
+- `<PATH_TO_YOUR_VAULT>`: absolute path to your vault root
+- `<PLUGIN_ID>`: plugin folder/id (for example: `obsidian-tikzjax-pdf`)
+
+If needed, you can also pass an absolute TeX engine path (for example: `/Library/TeX/texbin/xelatex`).
+
+In **Internal Link processing**, use:
+- `Leave unchanged` (recommended)
+
+### TikZ captions, labels, and placement in Markdown
+Inside a `tikz` code block you can add metadata comments:
+
+```latex
+% caption: Sistema massa-molla orizzontale
+% shortcaption: Massa-molla
+% label: fig:massa-molla
+% placement: H
+\begin{document}
+\begin{tikzpicture}
+...
+\end{tikzpicture}
+\end{document}
+```
+
+Supported metadata:
+- `% caption:` creates a LaTeX `figure` and `\caption{...}`
+- `% shortcaption:` creates `\caption[short]{long}`
+- `% label:` adds `\label{...}`
+- `% placement:` sets figure placement (default: `htbp`, e.g. `H` requires `float` package)
+
+If no caption is present, `tikzpicture` output is still centered.

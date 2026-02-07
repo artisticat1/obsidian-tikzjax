@@ -146,3 +146,23 @@
     margin-left: auto;
     margin-right: auto;
 }
+
+.block-language-tikz svg {
+    display: block;
+    overflow: visible;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media print {
+    .block-language-tikz {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        overflow: visible;
+    }
+
+    .block-language-tikz svg {
+        max-width: 100%;
+        height: auto;
+    }
+}

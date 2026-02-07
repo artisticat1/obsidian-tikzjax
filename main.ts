@@ -8,6 +8,7 @@ import tikzjaxJs from 'inline:./tikzjax.js';
 
 export default class TikzjaxPlugin extends Plugin {
 	settings: TikzjaxPluginSettings;
+	private initializedDocs = new WeakSet<Document>();
 
 	async onload() {
 		await this.loadSettings();
@@ -42,21 +43,30 @@ export default class TikzjaxPlugin extends Plugin {
 
 
 	loadTikZJax(doc: Document) {
-		const s = document.createElement("script");
-		s.id = "tikzjax";
-		s.type = "text/javascript";
-		s.innerText = tikzjaxJs;
-		doc.body.appendChild(s);
+		if (this.initializedDocs.has(doc)) {
+			return;
+		}
 
+		if (!doc.getElementById("tikzjax")) {
+			const s = doc.createElement("script");
+			s.id = "tikzjax";
+			s.type = "text/javascript";
+			s.innerText = tikzjaxJs;
 
-		doc.addEventListener('tikzjax-load-finished', this.postProcessSvg);
+			const target = doc.body ?? doc.head ?? doc.documentElement;
+			target.appendChild(s);
+		}
+
+		doc.addEventListener("tikzjax-load-finished", this.postProcessSvg);
+		this.initializedDocs.add(doc);
 	}
 
 	unloadTikZJax(doc: Document) {
 		const s = doc.getElementById("tikzjax");
-		s.remove();
+		s?.remove();
 
 		doc.removeEventListener("tikzjax-load-finished", this.postProcessSvg);
+		this.initializedDocs.delete(doc);
 	}
 
 	loadTikZJaxAllWindows() {
@@ -94,6 +104,10 @@ export default class TikzjaxPlugin extends Plugin {
 
 	registerTikzCodeBlock() {
 		this.registerMarkdownCodeBlockProcessor("tikz", (source, el, ctx) => {
+			// Ensure TikZJax is loaded in the specific document that is rendering this block.
+			// This also covers export/print contexts that may render in a separate document.
+			this.loadTikZJax(el.ownerDocument);
+
 			const script = el.createEl("script");
 
 			script.setAttribute("type", "text/tikz");
@@ -183,4 +197,3 @@ export default class TikzjaxPlugin extends Plugin {
 		svgEl.outerHTML = svg;
 	}
 }
-

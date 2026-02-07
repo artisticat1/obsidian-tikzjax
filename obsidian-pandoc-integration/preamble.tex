@@ -1,0 +1,19 @@
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{tikz-cd}
+\usepackage{circuitikz}
+\usepackage{chemfig}
+\usepackage{float} % enables [H] placement for figures when needed
+
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\typing}[3][\Gamma]{#1 \vdash #2 : #3}
+
+\newcommand{\dv}[3][]{\frac{\dd^{#1} #2}{\dd #3^{#1}}}
+\newcommand{\pdv}[3][]{\frac{\partial^{#1} #2}{\partial #3^{#1}}}
+
+\renewcommand{\vec}[1]{\mathbfit{#1}}
+\newcommand{\tensor}[1]{\boldsymbol{#1}}
+\newcommand{\vers}[1]{\vec{e}_{#1}}
+
+\newcommand{\eqlabel}[1]{\tag{#1}\label{#1}}
