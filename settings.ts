@@ -1,6 +1,7 @@
 import { App, PluginSettingTab, Setting, Notice} from 'obsidian';
 import TikzjaxPlugin from "./main";
 import * as localForage from "localforage";
+import { getUiStrings } from "./i18n";
 
 
 export interface TikzjaxPluginSettings {
@@ -32,10 +33,11 @@ export class TikzjaxSettingTab extends PluginSettingTab {
 	display(): void {
 		const {containerEl} = this;
 		containerEl.empty();
+		const strings = getUiStrings();
 
 		new Setting(containerEl)
-			.setName('Invert dark colors in dark mode')
-			.setDesc('Invert dark colors in diagrams (e.g. axes, arrows) when in dark mode, so that they are visible.')
+			.setName(strings.invertColorsName)
+			.setDesc(strings.invertColorsDescription)
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.invertColorsInDarkMode)
 				.onChange(async (value) => {
@@ -46,11 +48,11 @@ export class TikzjaxSettingTab extends PluginSettingTab {
 
 
 		new Setting(containerEl)
-			.setName('Clear cached SVGs')
-			.setDesc('SVGs rendered with TikZJax are stored in a database, so diagrams don\'t have to be re-rendered from scratch every time you open a page. Use this to clear the cache and force all diagrams to be re-rendered.')
+			.setName(strings.clearCacheName)
+			.setDesc(strings.clearCacheDescription)
 			.addButton(button => button
 				.setIcon("trash")
-				.setTooltip("Clear cached SVGs")
+				.setTooltip(strings.clearCacheName)
 				.onClick(async () => {
 					localForage.clear((err) => {
 						if (err) {
@@ -58,7 +60,7 @@ export class TikzjaxSettingTab extends PluginSettingTab {
 							new Notice(err, 3000);
 						}
 						else {
-							new Notice("TikZJax: Successfully cleared cached SVGs.", 3000);
+							new Notice(getUiStrings().cacheCleared, 3000);
 						}
 					});
 				}));
